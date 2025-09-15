@@ -10,6 +10,8 @@ import {
   ScrollView,
   useColorScheme,
   Alert,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import { WebView } from 'react-native-webview';
 import { vanguardApi, AgentResponse } from './services/vanguardApi';
@@ -97,64 +99,70 @@ function App() {
   return (
     <SafeAreaView style={[styles.container, isDarkMode && styles.darkContainer]}>
       <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-      
-      <View style={styles.header}>
-        <Text style={[styles.title, isDarkMode && styles.darkText]}>
-          Vanguard AI Agent
-        </Text>
-      </View>
 
-      <ScrollView style={styles.responseContainer}>
-        {responses.map((response) => (
-          <View key={response.id} style={[styles.responseItem, isDarkMode && styles.darkResponseItem]}>
-            {renderResponse(response)}
-          </View>
-        ))}
-        {responses.length === 0 && (
-          <View style={styles.placeholderContainer}>
-            <Text style={[styles.placeholderText, isDarkMode && styles.darkText]}>
-              Welcome! Ask the Vanguard AI Agent anything.
+      <KeyboardAvoidingView
+        style={styles.flex}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+      >
+        <View style={styles.header}>
+          <Text style={[styles.title, isDarkMode && styles.darkText]}>
+            Vanguard AI Agent
+          </Text>
+        </View>
+
+        <ScrollView style={styles.responseContainer}>
+          {responses.map((response) => (
+            <View key={response.id} style={[styles.responseItem, isDarkMode && styles.darkResponseItem]}>
+              {renderResponse(response)}
+            </View>
+          ))}
+          {responses.length === 0 && (
+            <View style={styles.placeholderContainer}>
+              <Text style={[styles.placeholderText, isDarkMode && styles.darkText]}>
+                Welcome! Ask the Vanguard AI Agent anything.
+              </Text>
+            </View>
+          )}
+        </ScrollView>
+
+        <View style={[styles.inputContainer, isDarkMode && styles.darkInputContainer]}>
+          <TextInput
+            style={[styles.textInput, isDarkMode && styles.darkTextInput]}
+            value={query}
+            onChangeText={setQuery}
+            placeholder={isRecording ? "Recording..." : "Type your query here..."}
+            placeholderTextColor={isDarkMode ? '#888' : '#666'}
+            multiline
+            maxLength={500}
+            editable={!isRecording}
+          />
+          <TouchableOpacity
+            style={[
+              styles.voiceButton,
+              isRecording && styles.recordingButton
+            ]}
+            onPress={handleVoicePress}
+            disabled={isLoading}
+          >
+            <Text style={styles.voiceButtonText}>
+              {isRecording ? '⏹️' : '🎤'}
             </Text>
-          </View>
-        )}
-      </ScrollView>
-
-      <View style={[styles.inputContainer, isDarkMode && styles.darkInputContainer]}>
-        <TextInput
-          style={[styles.textInput, isDarkMode && styles.darkTextInput]}
-          value={query}
-          onChangeText={setQuery}
-          placeholder={isRecording ? "Recording..." : "Type your query here..."}
-          placeholderTextColor={isDarkMode ? '#888' : '#666'}
-          multiline
-          maxLength={500}
-          editable={!isRecording}
-        />
-        <TouchableOpacity
-          style={[
-            styles.voiceButton,
-            isRecording && styles.recordingButton
-          ]}
-          onPress={handleVoicePress}
-          disabled={isLoading}
-        >
-          <Text style={styles.voiceButtonText}>
-            {isRecording ? '⏹️' : '🎤'}
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[
-            styles.submitButton,
-            (!query.trim() || isLoading || isRecording) && styles.disabledButton
-          ]}
-          onPress={handleSubmit}
-          disabled={!query.trim() || isLoading || isRecording}
-        >
-          <Text style={styles.submitButtonText}>
-            {isLoading ? 'Sending...' : 'Send'}
-          </Text>
-        </TouchableOpacity>
-      </View>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[
+              styles.submitButton,
+              (!query.trim() || isLoading || isRecording) && styles.disabledButton
+            ]}
+            onPress={handleSubmit}
+            disabled={!query.trim() || isLoading || isRecording}
+          >
+            <Text style={styles.submitButtonText}>
+              {isLoading ? 'Sending...' : 'Send'}
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
@@ -163,6 +171,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',
+  },
+  flex: {
+    flex: 1,
   },
   darkContainer: {
     backgroundColor: '#1a1a1a',
