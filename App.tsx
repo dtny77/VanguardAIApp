@@ -61,6 +61,11 @@ function AppContent() {
     await sendToVanguardApi(query.trim());
   };
 
+  const resetChat = () => {
+    setQuery('');
+    setResponses([]);
+  };
+
   const requestMicrophonePermission = async (): Promise<boolean> => {
     if (Platform.OS === 'android') {
       try {
@@ -186,13 +191,21 @@ function AppContent() {
       <KeyboardAvoidingView
         style={styles.flex}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+        keyboardVerticalOffset={0}
         enabled={true}
       >
-        <View style={styles.header}>
+        <View style={[styles.header, { paddingTop: Math.max(insets.top + 20, 50) }]}>
           <Text style={[styles.title, isDarkMode && styles.darkText]}>
-            Vanguard AI Agent
+            Vanguard Personal Assistant
           </Text>
+          <TouchableOpacity
+            style={styles.resetButton}
+            onPress={resetChat}
+          >
+            <Text style={styles.resetButtonText}>
+              ➕
+            </Text>
+          </TouchableOpacity>
         </View>
 
         <ScrollView 
@@ -218,9 +231,8 @@ function AppContent() {
           styles.inputContainer, 
           isDarkMode && styles.darkInputContainer,
           { 
-            // Extra padding for Samsung devices with gesture navigation
-            // Samsung devices often need more padding due to their navigation gestures
-            paddingBottom: Platform.OS === 'android' ? Math.max(insets.bottom + 12, 28) : Math.max(insets.bottom, 16),
+            // Minimal padding for gesture navigation
+            paddingBottom: Platform.OS === 'android' ? Math.max(insets.bottom, 16) : Math.max(insets.bottom, 8),
           }
         ]}>
           <TextInput
@@ -299,12 +311,28 @@ const styles = StyleSheet.create({
     padding: 20,
     borderBottomWidth: 1,
     borderBottomColor: '#e0e0e0',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
     textAlign: 'center',
     color: '#333',
+    flex: 1,
+    marginRight: 8,
+  },
+  resetButton: {
+    backgroundColor: '#00CED1',
+    borderRadius: 8,
+    width: 36,
+    height: 36,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  resetButtonText: {
+    fontSize: 16,
   },
   darkText: {
     color: '#fff',
@@ -386,7 +414,7 @@ const styles = StyleSheet.create({
   },
   voiceButton: {
     marginLeft: 8,
-    backgroundColor: '#34C759',
+    backgroundColor: '#00CED1',
     borderRadius: 8,
     justifyContent: 'center',
     alignItems: 'center',
@@ -397,7 +425,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FF3B30',
   },
   processingButton: {
-    backgroundColor: '#34C759',
+    backgroundColor: '#00CED1',
   },
   voiceButtonText: {
     fontSize: 18,
