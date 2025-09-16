@@ -17,6 +17,7 @@ import {
 import { WebView } from 'react-native-webview';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { vanguardApi, AgentResponse } from './services/vanguardApi';
+import Chart from './components/Chart';
 import { voiceService } from './services/voiceService';
 import { speechService } from './services/speechService';
 import { SPEECH_CONFIG } from './config';
@@ -64,6 +65,30 @@ function AppContent() {
   const resetChat = () => {
     setQuery('');
     setResponses([]);
+  };
+
+  const addTestChart = () => {
+    const testChartResponse: AgentResponse = {
+      id: Date.now().toString(),
+      type: 'chart',
+      content: 'Sample Sales Data Chart',
+      chartData: {
+        type: 'bar',
+        title: 'Monthly Sales',
+        xLabel: 'Months',
+        yLabel: 'Sales ($)',
+        data: [
+          { x: 'Jan', y: 1000 },
+          { x: 'Feb', y: 1500 },
+          { x: 'Mar', y: 1200 },
+          { x: 'Apr', y: 1800 },
+          { x: 'May', y: 2100 },
+          { x: 'Jun', y: 1950 },
+        ],
+        colors: ['#007AFF'],
+      },
+    };
+    setResponses(prev => [...prev, testChartResponse]);
   };
 
   const requestMicrophonePermission = async (): Promise<boolean> => {
@@ -179,6 +204,17 @@ function AppContent() {
             scrollEnabled={false}
           />
         );
+      case 'chart':
+        return (
+          <View>
+            {response.content && (
+              <Text style={[styles.responseText, isDarkMode && styles.darkText, styles.chartDescription]}>
+                {response.content}
+              </Text>
+            )}
+            {response.chartData && <Chart data={response.chartData} />}
+          </View>
+        );
       default:
         return null;
     }
@@ -198,14 +234,24 @@ function AppContent() {
           <Text style={[styles.title, isDarkMode && styles.darkText]}>
             Vanguard Personal Assistant
           </Text>
-          <TouchableOpacity
-            style={styles.resetButton}
-            onPress={resetChat}
-          >
-            <Text style={styles.resetButtonText}>
-              ➕
-            </Text>
-          </TouchableOpacity>
+          <View style={styles.headerButtons}>
+            <TouchableOpacity
+              style={styles.testButton}
+              onPress={addTestChart}
+            >
+              <Text style={styles.testButtonText}>
+                📊
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.resetButton}
+              onPress={resetChat}
+            >
+              <Text style={styles.resetButtonText}>
+                ➕
+              </Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
         <ScrollView 
@@ -323,6 +369,21 @@ const styles = StyleSheet.create({
     flex: 1,
     marginRight: 8,
   },
+  headerButtons: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  testButton: {
+    backgroundColor: '#FF9500',
+    borderRadius: 8,
+    width: 36,
+    height: 36,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  testButtonText: {
+    fontSize: 16,
+  },
   resetButton: {
     backgroundColor: '#00CED1',
     borderRadius: 8,
@@ -370,6 +431,10 @@ const styles = StyleSheet.create({
   webView: {
     height: 200,
     backgroundColor: 'transparent',
+  },
+  chartDescription: {
+    marginBottom: 8,
+    fontWeight: '600',
   },
   placeholderContainer: {
     flex: 1,

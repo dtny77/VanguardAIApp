@@ -1,9 +1,19 @@
 import { VANGUARD_CONFIG } from '../config';
 
+export interface ChartData {
+  type: 'line' | 'bar' | 'pie' | 'area' | 'scatter';
+  data: Array<{x: string | number, y: number, [key: string]: any}>;
+  title?: string;
+  xLabel?: string;
+  yLabel?: string;
+  colors?: string[];
+}
+
 export interface AgentResponse {
   id: string;
-  type: 'text' | 'html' | 'svg';
+  type: 'text' | 'html' | 'svg' | 'chart';
   content: string;
+  chartData?: ChartData;
 }
 
 export interface VanguardApiConfig {
@@ -47,7 +57,17 @@ class VanguardApiService {
       }
 
       const data = await response.json();
-      
+
+      // Check if response contains chart data
+      if (data.chart_data || data.chartData) {
+        return {
+          id: Date.now().toString(),
+          type: 'chart',
+          content: data.content || data.response || data.answer || 'Chart generated',
+          chartData: data.chart_data || data.chartData,
+        };
+      }
+
       return {
         id: Date.now().toString(),
         type: data.type || 'text',
@@ -59,6 +79,7 @@ class VanguardApiService {
       throw error; // Re-throw to be handled by the component
     }
   }
+
 
   // Method to handle different response types from the API
   processResponse(rawResponse: any): AgentResponse {
