@@ -11,7 +11,7 @@ import {
 // Configuration for Vanguard AI Agent integration
 export const VANGUARD_CONFIG = {
   // Vanguard AI Agent API endpoint
-  API_BASE_URL: VANGUARD_API_BASE_URL || 'https://fqmsebyf3j.execute-api.us-east-1.amazonaws.com/prod/',
+  API_BASE_URL: VANGUARD_API_BASE_URL || 'https://p8aq8ewwi3.execute-api.us-east-1.amazonaws.com/prod/',
 
   // API key for x-api-key header
   API_KEY: VANGUARD_API_KEY || '',

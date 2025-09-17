@@ -39,6 +39,10 @@ class VanguardApiService {
     }, this.config.timeout!);
 
     try {
+      console.log('Sending request to:', this.config.baseUrl);
+      console.log('Query:', query);
+      console.log('Has API key:', !!this.config.apiKey);
+      
       // Call the root endpoint directly (not /query)
       const response = await fetch(this.config.baseUrl, {
         method: 'POST',
@@ -51,17 +55,49 @@ class VanguardApiService {
       });
 
       clearTimeout(timeoutId);
+      console.log('Response status:', response.status);
+      console.log('Response ok:', response.ok);
 
       if (!response.ok) {
-        throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+        const errorText = await response.text();
+        console.log('Error response:', errorText);
+        throw new Error(`API request failed: ${response.status} ${response.statusText} - ${errorText}`);
       }
 
       const data = await response.json();
+      console.log('Response data:', data);
 
-      // Check if response contains chart data
+      // Check if response contains chart data separated by ---CHART_DATA--- marker
+      const responseContent = data.content || data.response || data.answer || '';
+      if (responseContent.includes('---CHART_DATA---')) {
+        const parts = responseContent.split('---CHART_DATA---');
+        const textContent = parts[0].trim();
+        
+        try {
+          const chartDataString = parts[1].trim();
+          const chartData = JSON.parse(chartDataString);
+          
+          return {
+            id: data.session_id || Date.now().toString(),
+            type: 'chart',
+            content: textContent,
+            chartData: chartData,
+          };
+        } catch (error) {
+          console.error('Failed to parse chart data:', error);
+          // If chart data parsing fails, return as text
+          return {
+            id: data.session_id || Date.now().toString(),
+            type: 'text',
+            content: responseContent.replace('---CHART_DATA---', '').trim(),
+          };
+        }
+      }
+
+      // Check if response contains chart data in separate fields
       if (data.chart_data || data.chartData) {
         return {
-          id: Date.now().toString(),
+          id: data.session_id || Date.now().toString(),
           type: 'chart',
           content: data.content || data.response || data.answer || 'Chart generated',
           chartData: data.chart_data || data.chartData,
@@ -69,13 +105,19 @@ class VanguardApiService {
       }
 
       return {
-        id: Date.now().toString(),
+        id: data.session_id || Date.now().toString(),
         type: data.type || 'text',
-        content: data.content || data.response || data.answer || 'No response received',
+        content: responseContent || 'No response received',
       };
     } catch (error) {
       clearTimeout(timeoutId);
-      console.error('Vanguard API Error:', error);
+      console.error('Vanguard API Error details:', {
+        message: error instanceof Error ? error.message : 'Unknown error',
+        name: error instanceof Error ? error.name : 'Unknown',
+        stack: error instanceof Error ? error.stack : undefined,
+        url: this.config.baseUrl,
+        hasApiKey: !!this.config.apiKey
+      });
       throw error; // Re-throw to be handled by the component
     }
   }

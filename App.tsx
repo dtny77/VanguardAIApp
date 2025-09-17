@@ -67,30 +67,6 @@ function AppContent() {
     setResponses([]);
   };
 
-  const addTestChart = () => {
-    const testChartResponse: AgentResponse = {
-      id: Date.now().toString(),
-      type: 'chart',
-      content: 'Sample Sales Data Chart',
-      chartData: {
-        type: 'bar',
-        title: 'Monthly Sales',
-        xLabel: 'Months',
-        yLabel: 'Sales ($)',
-        data: [
-          { x: 'Jan', y: 1000 },
-          { x: 'Feb', y: 1500 },
-          { x: 'Mar', y: 1200 },
-          { x: 'Apr', y: 1800 },
-          { x: 'May', y: 2100 },
-          { x: 'Jun', y: 1950 },
-        ],
-        colors: ['#007AFF'],
-      },
-    };
-    setResponses(prev => [...prev, testChartResponse]);
-  };
-
   const requestMicrophonePermission = async (): Promise<boolean> => {
     if (Platform.OS === 'android') {
       try {
@@ -232,17 +208,9 @@ function AppContent() {
       >
         <View style={[styles.header, { paddingTop: Math.max(insets.top + 20, 50) }]}>
           <Text style={[styles.title, isDarkMode && styles.darkText]}>
-            Vanguard Personal Assistant
+            🤖 FinAgent
           </Text>
           <View style={styles.headerButtons}>
-            <TouchableOpacity
-              style={styles.testButton}
-              onPress={addTestChart}
-            >
-              <Text style={styles.testButtonText}>
-                📊
-              </Text>
-            </TouchableOpacity>
             <TouchableOpacity
               style={styles.resetButton}
               onPress={resetChat}
@@ -267,7 +235,7 @@ function AppContent() {
           {responses.length === 0 && (
             <View style={styles.placeholderContainer}>
               <Text style={[styles.placeholderText, isDarkMode && styles.darkText]}>
-                Welcome! Ask the Vanguard AI Agent anything.
+                Privacy-first personalization powered by marketplace agents.
               </Text>
             </View>
           )}
@@ -372,17 +340,6 @@ const styles = StyleSheet.create({
   headerButtons: {
     flexDirection: 'row',
     gap: 8,
-  },
-  testButton: {
-    backgroundColor: '#FF9500',
-    borderRadius: 8,
-    width: 36,
-    height: 36,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  testButtonText: {
-    fontSize: 16,
   },
   resetButton: {
     backgroundColor: '#00CED1',
